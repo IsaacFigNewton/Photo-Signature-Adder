@@ -40,8 +40,8 @@ public class SignatureAdder{
    //                                                                           Main Class \/
    public static void main(String[]args) throws IOException{
         Scanner reader = new Scanner(System.in);
-//        //debug
-//        System.out.println("1");
+        //debug
+        System.out.println("1");
         processImage();
         while (numPhotos - 1 > 0 && photoIndex < numPhotos)
             processImage();
@@ -53,8 +53,8 @@ public class SignatureAdder{
     
    public static void processImage () throws IOException {
         try {
-//            //debug
-//            System.out.println("3");
+            //debug
+            System.out.println(photoIndex + 1);
             
             //instantiate variables
             
@@ -65,33 +65,32 @@ public class SignatureAdder{
             ArrayList<String> files = new ArrayList<String> ();
             String fileName = "";
 
-           //create a list of potential files
-           inputFolder = new File("Input\\");
-           photos = inputFolder.list();
-           numPhotos = photos.length;
+            //create a list of potential files
+            inputFolder = new File("Input\\");
+            photos = inputFolder.list();
+            numPhotos = photos.length;
+
+            //debug
+            System.out.println("3");
+
+            //select the photo and create index or next photo
+            fileName = photos[photoIndex];
+            photoIndex++;
            
-//           //debug
-//           System.out.println("3.4");
-//           if (fileFolder.isDirectory())
-//           System.out.println(filesInCategory);
+           //debug
+           System.out.println("3.1");
 
-           //select the photo and create index or next photo
-           fileName = photos[photoIndex];
-           photoIndex++;
-           
-//           //debug
-//           System.out.println("3.5");
-
-           String filePath = "Input" + fileName;
-
-//           //debug
-//           System.out.println("4");
+            String filePath = "Input\\" + fileName;
+            theImage = new APImage(filePath);
+            
+           //debug
+           System.out.println("4");
            
            //add the signature to the photo
            theImage = SignatureImagePrep.prepImage(filePath);
            
-           //visual aid
-           theImage.draw();
+//           //visual aid
+//           theImage.draw();
            
         } catch (IOException ex) {
             System.out.println("Something went wrong while getting and processing the training image.");
