@@ -39,7 +39,7 @@ public class SignatureImagePrep {
             int padding = (maxX+maxY)/200;
             
             //debug
-            System.out.println("5");
+            System.out.print(", 5");
             
             //scale signature to 1/16th the photo's width
             resizeSignature(signatureScale);
@@ -56,18 +56,22 @@ public class SignatureImagePrep {
             int x = 0;
             //the starting x coordinate of the "bounding box"
             int startX = maxX - signatureScale + padding;
+            //the ending x coordinate of the "bounding box"
+            int endX = maxX - padding;
             int y = 0;
             //the starting x coordinate of the "bounding box"
             int startY = maxY - signatureScale/sigYDiff + padding;
+            //the ending y coordinate of the "bounding box"
+            int endY = maxY - padding;
             for (Pixel p : imgIn) {
                 //if the photo's pixel is within the bounds of a bounding box representing the size of the signature
-                if ((x > startX && (x < maxX - padding)) && (y > startY && (y < maxY - padding))) {
+                if ((x > startX && x < endX) && (y > startY && y < endY)) {
 //                    System.out.println("Width: " + maxX);
 //                    System.out.println("x: " + x);
 //                    System.out.println("Height: " + maxY);
 //                    System.out.println("y: " + y);
                     
-                    if (i%10000 == 0)
+                    if (i%50000 == 0)
                         System.out.print("|");
                     
                     //this is where we use the buffered images' data
@@ -96,7 +100,7 @@ public class SignatureImagePrep {
             System.out.println("Logical malfunction SignatureImagePrep.java; will only draw pixels of signature as diagonal, 45-degree black line in upper-right hand corner");
             System.out.println("See line 95 for slightly more information.");
             //debug
-            System.out.println("7");
+            System.out.print("7");
             
             //save signed photo
             // extracts extension of input file
@@ -105,7 +109,7 @@ public class SignatureImagePrep {
             ImageIO.write(imgOut, formatName, new File("Output\\" + path.substring(path.lastIndexOf("\\") + 1)));
             
             //debug
-            System.out.println("8");
+            System.out.println(", 8");
             
             return imgIn;
         } catch (IOException ex) {
@@ -119,7 +123,7 @@ public class SignatureImagePrep {
     public static void resizeSignature(int size) throws IOException {
         try {
             //debug
-            System.out.println("6");
+            System.out.println(", 6");
             String signaturePath = "Signature\\Signature.jpg";
             
             // reads input image

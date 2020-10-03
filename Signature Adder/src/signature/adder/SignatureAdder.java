@@ -45,16 +45,15 @@ public class SignatureAdder{
         processImage();
         while (numPhotos - 1 > 0 && photoIndex < numPhotos)
             processImage();
-        
-
-   }
+}
    
    
     
    public static void processImage () throws IOException {
         try {
             //debug
-            System.out.println(photoIndex + 1);
+            System.out.println();
+            System.out.println("Photo number " + (photoIndex + 1));
             
             //instantiate variables
             
@@ -62,8 +61,7 @@ public class SignatureAdder{
 
             String [] photos;
 
-            ArrayList<String> files = new ArrayList<String> ();
-            String fileName = "";
+            String fileName;
 
             //create a list of potential files
             inputFolder = new File("Input\\");
@@ -71,26 +69,24 @@ public class SignatureAdder{
             numPhotos = photos.length;
 
             //debug
-            System.out.println("3");
+            System.out.print("2");
 
             //select the photo and create index or next photo
             fileName = photos[photoIndex];
             photoIndex++;
            
            //debug
-           System.out.println("3.1");
+           System.out.print(", 3");
 
             String filePath = "Input\\" + fileName;
             theImage = new APImage(filePath);
             
            //debug
-           System.out.println("4");
+           System.out.print(", 4");
            
            //add the signature to the photo
            theImage = SignatureImagePrep.prepImage(filePath);
            
-//           //visual aid
-//           theImage.draw();
            
         } catch (IOException ex) {
             System.out.println("Something went wrong while getting and processing the training image.");
