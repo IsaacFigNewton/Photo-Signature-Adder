@@ -76,7 +76,7 @@ public class SignatureImagePrep {
                     
                     //this is where we use the buffered images' data
                     //Get the color of the temporary signature's pixel at the location on the main photo minus the starting coordinates of the "bounding box"
-                    Color tempSigPixelColor =new Color(tempSig.getRGB(x - startX, y - startY));
+                    Color tempSigPixelColor = new Color(tempSig.getRGB(x - startX, y - startY));
                     //Then set the respective pixel on the main photo to that color
                     imgOut.setRGB(tempSigPixelColor.getRed(), tempSigPixelColor.getGreen(), tempSigPixelColor.getBlue());
                 }
