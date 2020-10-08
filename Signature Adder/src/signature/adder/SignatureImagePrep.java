@@ -26,12 +26,18 @@ public class SignatureImagePrep {
             public static double sigYDiff = 64/5;
             public static String loadingBar;
             
+            //set up the images
+            public static APImage imgIn;
+            //make a BufferedImage object that is virtually the same as imgIn, except we can automatically save it more easily
+            public static BufferedImage imgOut;
+            public static APImage signature;
+            
     public static APImage prepImage (String path) throws IOException {
         try {
-            APImage imgIn = new APImage(path);
-            //make a BufferedImage object that is virtually the same as imgIn, except we can automatically save it more easily
-            BufferedImage imgOut = ImageIO.read(new File(path));
-            APImage signature = new APImage("Signature\\Signature.jpg");
+            imgIn = new APImage(path);
+            imgOut = ImageIO.read(new File(path));
+            signature = new APImage("Signature\\Signature.jpg");
+            
             int maxX = imgIn.getWidth();
             signatureScale = maxX/4;
             int maxY = imgIn.getHeight();
@@ -76,6 +82,8 @@ public class SignatureImagePrep {
                     //this is where we use the buffered images' data
                     //Get the color of the temporary signature's pixel at the location on the main photo minus the starting coordinates of the "bounding box"
                     //Then set the respective pixel on the main photo to that color
+                    //don't include the whitespace in the signature writing (use the upper leftmost pixel as a reference pixel for the background)
+                    if (tempSig.getRGB(x - startX, y - startY) != tempSig.getRGB(0, 0))
                     imgOut.setRGB(x, y, tempSig.getRGB(x - startX, y - startY));
                 }
                 

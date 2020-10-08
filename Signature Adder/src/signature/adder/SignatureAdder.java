@@ -30,6 +30,7 @@ import images.APImage;
 import images.Pixel;
 import java.io.*;
 import java.util.*;
+import javax.imageio.ImageIO;
 //import Main.SignatureImagePrep;
 
 public class SignatureAdder{
@@ -43,11 +44,18 @@ public class SignatureAdder{
         //debug
         System.out.println("1");
         processImage();
-        while (numPhotos - 1 > 0 && photoIndex < numPhotos)
+        while (numPhotos - 1 > 0 && photoIndex < numPhotos) {
+            //maybe the buffered images aren't getting reset each time and that's what's causing the memory overload?
+//            resetImages();
             processImage();
+        }
 }
    
-   
+   public static void resetImages () {
+       SignatureImagePrep.imgIn = new APImage();
+       SignatureImagePrep.signature = new APImage();
+       
+   }
     
    public static void processImage () throws IOException {
         try {
