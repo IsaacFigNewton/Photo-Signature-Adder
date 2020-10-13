@@ -51,12 +51,6 @@ public class SignatureAdder{
         }
 }
    
-   public static void resetImages () {
-       SignatureImagePrep.imgIn = new APImage();
-       SignatureImagePrep.signature = new APImage();
-       
-   }
-    
    public static void processImage () throws IOException {
         try {
             //debug

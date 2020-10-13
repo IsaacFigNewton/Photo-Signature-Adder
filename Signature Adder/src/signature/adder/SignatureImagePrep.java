@@ -23,13 +23,15 @@ public class SignatureImagePrep {
     //signature's scale
             public static int signatureScale;
             //signature's y scale with respect to the x scale
-            public static double sigYDiff = 64/5;
+            public static double SIGNATURE_HEIGHT_SCALE = 64/5;
             public static String loadingBar;
             
+            //                                          Move this into methods to stop memory leak/s?
             //set up the images
             public static APImage imgIn;
             //make a BufferedImage object that is virtually the same as imgIn, except we can automatically save it more easily
             public static BufferedImage imgOut;
+            
             public static APImage signature;
             
     public static APImage prepImage (String path) throws IOException {
@@ -37,6 +39,11 @@ public class SignatureImagePrep {
             imgIn = new APImage(path);
             imgOut = ImageIO.read(new File(path));
             signature = new APImage("Signature\\Signature.jpg");
+            BufferedImage signature2 = ImageIO.read(new File("Signature\\Signature.jpg"));
+            //get color of the original signature image's reference pixels to determine the approximate text color
+            int textColor1 = signature2.getRGB(0, 0);
+            int textColor2 = signature2.getRGB(1, 0);
+            int textColor3 = signature2.getRGB(2, 0);
             
             int maxX = imgIn.getWidth();
             signatureScale = maxX/4;
@@ -57,7 +64,7 @@ public class SignatureImagePrep {
             signatureScale = tempSig.getWidth();
 
             //Start of Loading Bar
-            System.out.println("Loading...");
+            System.out.println("Processing...");
             System.out.printf("[");
             int i = 0;
             //the starting x coordinate of the "bounding box"
@@ -67,7 +74,7 @@ public class SignatureImagePrep {
             //the ending x coordinate of the "bounding box"
             int endX = maxX - padding;
             //the starting x coordinate of the "bounding box"
-            int startY = maxY - (int)(signatureScale/sigYDiff) - padding;
+            int startY = maxY - (int)(signatureScale/SIGNATURE_HEIGHT_SCALE) - padding;
             
             int y = startY;
             //the ending y coordinate of the "bounding box"
@@ -83,7 +90,7 @@ public class SignatureImagePrep {
                     //Get the color of the temporary signature's pixel at the location on the main photo minus the starting coordinates of the "bounding box"
                     //Then set the respective pixel on the main photo to that color
                     //don't include the whitespace in the signature writing (use the upper leftmost pixel as a reference pixel for the background)
-                    if (tempSig.getRGB(x - startX, y - startY) != tempSig.getRGB(0, 0))
+                    if ((tempSig.getRGB(x - startX, y - startY) == textColor1) || (tempSig.getRGB(x - startX, y - startY) == textColor2) || (tempSig.getRGB(x - startX, y - startY) == textColor3))
                     imgOut.setRGB(x, y, tempSig.getRGB(x - startX, y - startY));
                 }
                 
@@ -136,7 +143,7 @@ public class SignatureImagePrep {
 
             // scales the input image to the output image
             Graphics2D g2d = outputImage.createGraphics();
-            g2d.drawImage(inputImage, 0, 0, size, (int)(size/sigYDiff), null);
+            g2d.drawImage(inputImage, 0, 0, size, (int)(size/SIGNATURE_HEIGHT_SCALE), null);
             g2d.dispose();
 
             // extracts extension of output file
