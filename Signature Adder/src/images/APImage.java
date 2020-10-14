@@ -248,7 +248,13 @@ public class APImage extends JFrame implements Iterable<Pixel>{
     private Pixel[] imageToPixels(Image image){
         int w = image.getWidth(this);
         int h = image.getHeight(this);
-        int[] pixels = new int[w * h];
+        int[] pixels;
+        
+//        if (w*h > 0)
+            pixels = new int[w * h];
+//        else
+//            pixels = new int[2147483647];
+        
         PixelGrabber pg = new PixelGrabber(image, 0, 0, w, h, pixels, 0, w); 
         try{
             pg.grabPixels();

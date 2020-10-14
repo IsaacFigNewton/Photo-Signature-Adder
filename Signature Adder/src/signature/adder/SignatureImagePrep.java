@@ -10,7 +10,7 @@ package signature.adder;
  * @author Owner
  */
 
-import images.APImage;
+//import images.APImage;
 import java.awt.*;
 import images.Pixel;
 import java.awt.Graphics2D;
@@ -22,17 +22,16 @@ import javax.imageio.ImageIO;
 public class SignatureImagePrep {
             //signature's y scale with respect to the x scale
             public static final double SIGNATURE_HEIGHT_SCALE = 64/5;
-            
-            public static APImage signature;
-            
-    public static APImage prepImage (String path) throws IOException {
+                        
+    public static BufferedImage prepImage (String path) throws IOException {
         try {
             //set up the images
-            APImage imgIn = new APImage(path);
+            BufferedImage imgIn = ImageIO.read(new File(path));
+                      
             //make a BufferedImage object that is virtually the same as imgIn, except we can automatically save it more easily
             BufferedImage imgOut = ImageIO.read(new File(path));
-            signature = new APImage("Signature\\Signature.jpg");
             BufferedImage signature2 = ImageIO.read(new File("Signature\\Signature.jpg"));
+            
             //get color of the original signature image's reference pixels to determine the approximate text color
             int textColor1 = signature2.getRGB(0, 0);
             int textColor2 = signature2.getRGB(1, 0);
@@ -115,7 +114,7 @@ public class SignatureImagePrep {
         } catch (IOException ex) {
             System.out.println("Error resizing the image.");
             ex.printStackTrace();
-            return new APImage("placeholder.jpg");
+            return new BufferedImage(100, 100, 1);
         }
     }
     

@@ -34,7 +34,8 @@ allows up to 128 megabytes of heap space.
 */
 
 import signature.adder.SignatureImagePrep;
-import images.APImage;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import images.Pixel;
 import java.io.*;
 import java.util.*;
@@ -47,19 +48,22 @@ public class SignatureAdder{
    public static int numPhotos = 1;
    //                                                                           Main Class \/
    public static void main(String[]args) throws IOException{
-        Scanner reader = new Scanner(System.in);
-        //debug
+        try { //debug
         System.out.println("1");
         while (numPhotos > 0 && photoIndex < numPhotos) {
             //maybe the buffered images aren't getting reset each time and that's what's causing the memory overload?
 //            resetImages();
             processImage();
+            Thread.sleep(0);
+        }
+        } catch (InterruptedException ex) {
+            System.out.println("Couldn't pause");
         }
 }
    
    public static void processImage () throws IOException {
         try {
-            APImage theImage;
+            BufferedImage theImage;
             //debug
             System.out.println();
             System.out.println("Photo number " + (photoIndex + 1));
@@ -88,7 +92,7 @@ public class SignatureAdder{
            System.out.print(", 3");
 
             String filePath = "Input\\" + fileName;
-            theImage = new APImage(filePath);
+            theImage = ImageIO.read(new File(filePath));
             
            //debug
            System.out.print(", 4");
