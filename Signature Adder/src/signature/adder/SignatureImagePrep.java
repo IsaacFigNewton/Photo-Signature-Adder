@@ -20,24 +20,17 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class SignatureImagePrep {
-    //signature's scale
-            public static int signatureScale;
             //signature's y scale with respect to the x scale
-            public static double SIGNATURE_HEIGHT_SCALE = 64/5;
-            public static String loadingBar;
-            
-            //                                          Move this into methods to stop memory leak/s?
-            //set up the images
-            public static APImage imgIn;
-            //make a BufferedImage object that is virtually the same as imgIn, except we can automatically save it more easily
-            public static BufferedImage imgOut;
+            public static final double SIGNATURE_HEIGHT_SCALE = 64/5;
             
             public static APImage signature;
             
     public static APImage prepImage (String path) throws IOException {
         try {
-            imgIn = new APImage(path);
-            imgOut = ImageIO.read(new File(path));
+            //set up the images
+            APImage imgIn = new APImage(path);
+            //make a BufferedImage object that is virtually the same as imgIn, except we can automatically save it more easily
+            BufferedImage imgOut = ImageIO.read(new File(path));
             signature = new APImage("Signature\\Signature.jpg");
             BufferedImage signature2 = ImageIO.read(new File("Signature\\Signature.jpg"));
             //get color of the original signature image's reference pixels to determine the approximate text color
@@ -46,7 +39,7 @@ public class SignatureImagePrep {
             int textColor3 = signature2.getRGB(2, 0);
             
             int maxX = imgIn.getWidth();
-            signatureScale = maxX/4;
+            int signatureScale = maxX/4;
             int maxY = imgIn.getHeight();
             //amount of padding between the signature and sides of photos in pixels
             int padding = (maxX+maxY)/400;

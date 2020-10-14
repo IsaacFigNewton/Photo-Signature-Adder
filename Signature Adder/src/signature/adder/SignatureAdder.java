@@ -35,7 +35,6 @@ import javax.imageio.ImageIO;
 
 public class SignatureAdder{
    
-   public static APImage theImage = new APImage("placeholder.png");
    public static int photoIndex = 0;
    public static int numPhotos = 1;
    //                                                                           Main Class \/
@@ -43,8 +42,7 @@ public class SignatureAdder{
         Scanner reader = new Scanner(System.in);
         //debug
         System.out.println("1");
-        processImage();
-        while (numPhotos - 1 > 0 && photoIndex < numPhotos) {
+        while (numPhotos > 0 && photoIndex < numPhotos) {
             //maybe the buffered images aren't getting reset each time and that's what's causing the memory overload?
 //            resetImages();
             processImage();
@@ -53,6 +51,7 @@ public class SignatureAdder{
    
    public static void processImage () throws IOException {
         try {
+            APImage theImage;
             //debug
             System.out.println();
             System.out.println("Photo number " + (photoIndex + 1));
