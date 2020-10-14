@@ -36,11 +36,9 @@ allows up to 128 megabytes of heap space.
 import signature.adder.SignatureImagePrep;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import images.Pixel;
 import java.io.*;
 import java.util.*;
 import javax.imageio.ImageIO;
-//import Main.SignatureImagePrep;
 
 public class SignatureAdder{
    
@@ -110,4 +108,4 @@ public class SignatureAdder{
    
 }
 
-
+//Special thanks to Mr. Crow, my Cybersecurity teacher, for helping me debug this, I never would've finished it without his help
