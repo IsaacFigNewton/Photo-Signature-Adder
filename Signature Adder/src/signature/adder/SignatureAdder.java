@@ -16,6 +16,14 @@ Example 5.1
 You can reset maximum heap size when running the program if you run out of memory
 for large images, as follows:
 
+run the "configure java" application
+
+go to the "Java" tab
+
+click the "view..." button
+
+enter the following text into one or more of the "parameters" section of the items that pop up:
+
 java -Xmx<new size>m <program file name>
 
 where <new size> is an integer.  Example:
