@@ -36,13 +36,13 @@ public class SignatureImagePrep {
             int textColor3 = signature2.getRGB(2, 0);
             
             int maxX = imgIn.getWidth();
-            int signatureScale = maxX/4;
             int maxY = imgIn.getHeight();
+            int signatureScale = (maxX+maxY)/8;
             //amount of padding between the signature and sides of photos in pixels
             int padding = (maxX+maxY)/400;
             
-            //debug
-            System.out.print(", 5");
+//            //debug
+//            System.out.print(", 5");
             
             //scale signature to 1/16th the photo's width
             resizeSignature(signatureScale);
@@ -53,9 +53,9 @@ public class SignatureImagePrep {
             BufferedImage tempSig = ImageIO.read(new File("Signature\\Temp Signature.jpg"));
             signatureScale = tempSig.getWidth();
 
-            //Start of Loading Bar
+            //Start of processing indicator
             System.out.println("Processing...");
-            System.out.printf("[");
+            
             int i = 0;
             //the starting x coordinate of the "bounding box"
             int startX = maxX - signatureScale - padding;
@@ -72,19 +72,15 @@ public class SignatureImagePrep {
             while (y < endY) {
                 //if the photo's pixel is within the bounds of a bounding box representing the size of the signature
                 if ((x > startX && x < endX) && (y > startY && y < endY)) {
-                    //loading bar
-                    if (i%50000 == 0)
-                        System.out.print("|");
-                    
                     //this is where we use the buffered images' data
                     //Get the color of the temporary signature's pixel at the location on the main photo minus the starting coordinates of the "bounding box"
                     //Then set the respective pixel on the main photo to that color
                     //don't include the whitespace in the signature writing (use the upper leftmost pixel as a reference pixel for the background)
                     if ((tempSig.getRGB(x - startX, y - startY) == textColor1) || (tempSig.getRGB(x - startX, y - startY) == textColor2) || (tempSig.getRGB(x - startX, y - startY) == textColor3))
-                    imgOut.setRGB(x, y, tempSig.getRGB(x - startX, y - startY));
+                        imgOut.setRGB(x, y, tempSig.getRGB(x - startX, y - startY));
                 }
                 
-                //move 
+                //move on to next pixel
                 if (x >= maxX){
                     x = 0;
                     y++;
@@ -93,11 +89,9 @@ public class SignatureImagePrep {
                 }
                 i++;
             }
-            //end of Loading Bar
-            System.out.println("]");
             
-            //debug
-            System.out.print("7");
+//            //debug
+//            System.out.print("7");
             
             //save signed photo
             // extracts extension of input file
@@ -105,8 +99,8 @@ public class SignatureImagePrep {
             //saves imgOut to Output folder
             ImageIO.write(imgOut, formatName, new File("Output\\" + path.substring(path.lastIndexOf("\\") + 1)));
             
-            //debug
-            System.out.println(", 8");
+//            //debug
+//            System.out.println(", 8");
             
             return imgIn;
         } catch (IOException ex) {
@@ -119,8 +113,9 @@ public class SignatureImagePrep {
     //image resizing method
     public static void resizeSignature(int size) throws IOException {
         try {
-            //debug
-            System.out.println(", 6");
+//            //debug
+//            System.out.println(", 6");
+            
             String signaturePath = "Signature\\Signature.jpg";
             
             // reads input image

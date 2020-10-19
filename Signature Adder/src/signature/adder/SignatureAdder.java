@@ -46,17 +46,16 @@ public class SignatureAdder{
    public static int numPhotos = 1;
    //                                                                           Main Class \/
    public static void main(String[]args) throws IOException{
-        try { //debug
-        System.out.println("1");
-        while (numPhotos > 0 && photoIndex < numPhotos) {
-            //maybe the buffered images aren't getting reset each time and that's what's causing the memory overload?
-//            resetImages();
-            processImage();
-            Thread.sleep(0);
+        try {
+//        //debug
+//        System.out.println("1");
+            while (numPhotos > 0 && photoIndex < numPhotos) {
+                processImage();
+            }
+        } catch (IOException ex) {
+            System.out.println("Couldn't process one of the images");
         }
-        } catch (InterruptedException ex) {
-            System.out.println("Couldn't pause");
-        }
+        
 }
    
    public static void processImage () throws IOException {
@@ -79,21 +78,21 @@ public class SignatureAdder{
             photos = inputFolder.list();
             numPhotos = photos.length;
 
-            //debug
-            System.out.print("2");
+//            //debug
+//            System.out.print("2");
 
             //select the photo and create index or next photo
             fileName = photos[photoIndex];
             photoIndex++;
            
-           //debug
-           System.out.print(", 3");
+//           //debug
+//           System.out.print(", 3");
 
             String filePath = "Input\\" + fileName;
             theImage = ImageIO.read(new File(filePath));
             
-           //debug
-           System.out.print(", 4");
+//           //debug
+//           System.out.print(", 4");
            
            //add the signature to the photo
            theImage = SignatureImagePrep.prepImage(filePath);
