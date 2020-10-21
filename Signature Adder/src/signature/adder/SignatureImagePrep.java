@@ -18,7 +18,9 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class SignatureImagePrep {
-            //signature's y scale with respect to the x scale
+            //scales signature scaling based on area (for aesthetic reasons), which is why it takes the sqrt of whatever you enter
+            public static final double SIGNATURE_SCALE_SCALE = Math.sqrt(0.5);
+            //signature's y scale with respect to the main signature scale (not the one above)
             public static final double SIGNATURE_HEIGHT_SCALE = 64/5;
                         
     public static BufferedImage prepImage (String path) throws IOException {
@@ -28,60 +30,72 @@ public class SignatureImagePrep {
                       
             //make a BufferedImage object that is virtually the same as imgIn, except we can automatically save it more easily
             BufferedImage imgOut = ImageIO.read(new File(path));
-            BufferedImage signature2 = ImageIO.read(new File("Signature\\Signature.jpg"));
+            BufferedImage signature = ImageIO.read(new File("Signature\\Signature.jpg"));
+            BufferedImage signature2 = ImageIO.read(new File("Signature\\Inverted Signature.jpg"));
             
             //get color of the original signature image's reference pixels to determine the approximate text color
-            int textColor1 = signature2.getRGB(0, 0);
-            int textColor2 = signature2.getRGB(1, 0);
-            int textColor3 = signature2.getRGB(2, 0);
-//            int textColor4 = signature2.getRGB(3, 0);
-//            int textColor5 = signature2.getRGB(4, 0);
+            int textColor1 = signature.getRGB(0, 0);
+            int textColor2 = signature.getRGB(1, 0);
+            int textColor3 = signature.getRGB(2, 0);
+            int invTextColor1 = signature2.getRGB(0, 0);
+            int invTextColor2 = signature2.getRGB(1, 0);
+            int invTextColor3 = signature2.getRGB(2, 0);
             
             int maxX = imgIn.getWidth();
             int maxY = imgIn.getHeight();
-            int signatureScale = (maxX+maxY)/8;
+            int signatureScale = (int)(SIGNATURE_SCALE_SCALE *(maxX+maxY))/8;
             //amount of padding between the signature and sides of photos in pixels
-            int padding = (maxX+maxY)/400;
+            int padding = (int)(SIGNATURE_SCALE_SCALE * (maxX+maxY))/400;
+            int signatureOffset = (3*padding)/8;
             
 //            //debug
 //            System.out.print(", 5");
             
             //scale signature to 1/16th the photo's width
-            resizeSignature(signatureScale);
+            resizeSignature(signatureScale, "Signature\\Signature.jpg", "Signature\\Temp Signature.jpg");
+            resizeSignature(signatureScale, "Signature\\Inverted Signature.jpg", "Signature\\Inverted Temp Signature.jpg");
             
             
             //"this is where a little studio engineering comes in handy, my hard-rockin' amigo!"
             //make a BufferedImage object that is virtually the same as the temporary signature, except we can get the RGB values from it
             BufferedImage tempSig = ImageIO.read(new File("Signature\\Temp Signature.jpg"));
+            BufferedImage invTempSig = ImageIO.read(new File("Signature\\Inverted Temp Signature.jpg"));
             signatureScale = tempSig.getWidth();
 
             //Start of processing indicator
             System.out.println("Processing...");
             
             int i = 0;
+            
             //the starting x coordinate of the "bounding box"
             int startX = maxX - signatureScale - padding;
             //read signature image's pixels to each photo's respective pixels in the photo's lower right-hand corner
-            int x = startX + 1;
+            int x = startX;
             //the ending x coordinate of the "bounding box"
             int endX = maxX - padding;
+            
             //the starting x coordinate of the "bounding box"
             int startY = maxY - (int)(signatureScale/SIGNATURE_HEIGHT_SCALE) - padding;
-            
-            int y = startY + 1;
+            //read signature image's pixels to each photo's respective pixels in the photo's lower right-hand corner            
+            int y = startY;
             //the ending y coordinate of the "bounding box"
             int endY = maxY - padding;
+            
             while (y < endY) {
                 //if the photo's pixel is within the bounds of a bounding box representing the size of the signature
-                if ((x > startX && x < endX-1) && (y > startY && y < endY-1)) {
+                if ((x > startX && x < endX) && (y > startY && y < endY)) {
                     //this is where we use the buffered images' data
                     //Get the color of the temporary signature's pixel at the location on the main photo minus the starting coordinates of the "bounding box"
                     //Then set the respective pixel on the main photo to that color
                     //don't include the whitespace in the signature writing (use the upper leftmost pixel as a reference pixel for the background)
                     if ((tempSig.getRGB(x - startX, y - startY) == textColor1) || (tempSig.getRGB(x - startX, y - startY) == textColor2) || (tempSig.getRGB(x - startX, y - startY) == textColor3)) // || (tempSig.getRGB(x - startX, y - startY) == textColor4)
-                        imgOut.setRGB(x-1, y, tempSig.getRGB(x-1 - startX, y - startY));
                         imgOut.setRGB(x, y, tempSig.getRGB(x - startX, y - startY));
-                        imgOut.setRGB(x+1, y, tempSig.getRGB(x+1 - startX, y - startY));
+                    //do the same thing for the normal signature with the inverted one, but with an offset so that they're both discernible independently and together
+                    if ((invTempSig.getRGB(x - startX, y - startY) == invTextColor1) || (invTempSig.getRGB(x - startX, y - startY) == invTextColor2) || (invTempSig.getRGB(x - startX, y - startY) == invTextColor3)) // || (tempSig.getRGB(x - startX, y - startY) == textColor4)
+                        if (signatureOffset <= padding && signatureOffset >= 1)
+                            imgOut.setRGB(x + signatureOffset, y + signatureOffset, invTempSig.getRGB(x - startX, y - startY));
+                        else
+                            imgOut.setRGB(x + padding, y + padding, invTempSig.getRGB(x - startX, y - startY));
                 }
                 
                 //move on to next pixel
@@ -115,15 +129,13 @@ public class SignatureImagePrep {
     }
     
     //image resizing method
-    public static void resizeSignature(int size) throws IOException {
+    public static void resizeSignature(int size, String inPath, String outPath) throws IOException {
         try {
 //            //debug
 //            System.out.println(", 6");
             
-            String signaturePath = "Signature\\Signature.jpg";
-            
             // reads input image
-            File inputFile = new File(signaturePath);
+            File inputFile = new File(inPath);
             BufferedImage inputImage = ImageIO.read(inputFile);
 
             // creates output image
@@ -136,10 +148,10 @@ public class SignatureImagePrep {
             g2d.dispose();
 
             // extracts extension of output file
-            String formatName = signaturePath.substring(signaturePath.lastIndexOf(".") + 1);
+            String formatName = inPath.substring(inPath.lastIndexOf(".") + 1);
 
             // writes to output file (temporary, resized signature)
-            ImageIO.write(outputImage, formatName, new File("Signature\\Temp Signature.jpg"));
+            ImageIO.write(outputImage, formatName, new File(outPath));
 
         } catch (IOException ex) {
             System.out.println("Error resizing the image.");
