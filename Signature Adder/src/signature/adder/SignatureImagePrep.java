@@ -34,6 +34,8 @@ public class SignatureImagePrep {
             int textColor1 = signature2.getRGB(0, 0);
             int textColor2 = signature2.getRGB(1, 0);
             int textColor3 = signature2.getRGB(2, 0);
+//            int textColor4 = signature2.getRGB(3, 0);
+//            int textColor5 = signature2.getRGB(4, 0);
             
             int maxX = imgIn.getWidth();
             int maxY = imgIn.getHeight();
@@ -60,24 +62,26 @@ public class SignatureImagePrep {
             //the starting x coordinate of the "bounding box"
             int startX = maxX - signatureScale - padding;
             //read signature image's pixels to each photo's respective pixels in the photo's lower right-hand corner
-            int x = startX;
+            int x = startX + 1;
             //the ending x coordinate of the "bounding box"
             int endX = maxX - padding;
             //the starting x coordinate of the "bounding box"
             int startY = maxY - (int)(signatureScale/SIGNATURE_HEIGHT_SCALE) - padding;
             
-            int y = startY;
+            int y = startY + 1;
             //the ending y coordinate of the "bounding box"
             int endY = maxY - padding;
             while (y < endY) {
                 //if the photo's pixel is within the bounds of a bounding box representing the size of the signature
-                if ((x > startX && x < endX) && (y > startY && y < endY)) {
+                if ((x > startX && x < endX-1) && (y > startY && y < endY-1)) {
                     //this is where we use the buffered images' data
                     //Get the color of the temporary signature's pixel at the location on the main photo minus the starting coordinates of the "bounding box"
                     //Then set the respective pixel on the main photo to that color
                     //don't include the whitespace in the signature writing (use the upper leftmost pixel as a reference pixel for the background)
-                    if ((tempSig.getRGB(x - startX, y - startY) == textColor1) || (tempSig.getRGB(x - startX, y - startY) == textColor2) || (tempSig.getRGB(x - startX, y - startY) == textColor3))
+                    if ((tempSig.getRGB(x - startX, y - startY) == textColor1) || (tempSig.getRGB(x - startX, y - startY) == textColor2) || (tempSig.getRGB(x - startX, y - startY) == textColor3)) // || (tempSig.getRGB(x - startX, y - startY) == textColor4)
+                        imgOut.setRGB(x-1, y, tempSig.getRGB(x-1 - startX, y - startY));
                         imgOut.setRGB(x, y, tempSig.getRGB(x - startX, y - startY));
+                        imgOut.setRGB(x+1, y, tempSig.getRGB(x+1 - startX, y - startY));
                 }
                 
                 //move on to next pixel
