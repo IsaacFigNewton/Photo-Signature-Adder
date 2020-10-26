@@ -22,6 +22,11 @@ public class SignatureImagePrep {
             public static final double SIGNATURE_SCALE_SCALE = Math.sqrt(0.5);
             //signature's y scale with respect to the main signature scale (not the one above)
             public static final double SIGNATURE_HEIGHT_SCALE = 64/5;
+            
+            //black RGB code
+            public static final int BLACK = -16777216;
+            //white RGB code
+            public static final int WHITE = -1;
                         
     public static BufferedImage prepImage (String path) throws IOException {
         try {
@@ -32,14 +37,6 @@ public class SignatureImagePrep {
             BufferedImage imgOut = ImageIO.read(new File(path));
             BufferedImage signature = ImageIO.read(new File("Signature\\Signature.jpg"));
             BufferedImage signature2 = ImageIO.read(new File("Signature\\Inverted Signature.jpg"));
-            
-            //get color of the original signature image's reference pixels to determine the approximate text color
-            int textColor1 = signature.getRGB(0, 0);
-            int textColor2 = signature.getRGB(1, 0);
-            int textColor3 = signature.getRGB(2, 0);
-            int invTextColor1 = signature2.getRGB(0, 0);
-            int invTextColor2 = signature2.getRGB(1, 0);
-            int invTextColor3 = signature2.getRGB(2, 0);
             
             int maxX = imgIn.getWidth();
             int maxY = imgIn.getHeight();
@@ -81,6 +78,12 @@ public class SignatureImagePrep {
             //the ending y coordinate of the "bounding box"
             int endY = maxY - padding;
             
+            //255 = 1111 1111
+            //255 255 255 = 1111 1111 1111 1111 1111 1111 = 16777215
+            //There must be an extra bit for sign, therefore to increase brightness by 1 level, you'd do
+            //001 001 001 = 0000 0001 0000 0001 0000
+            //I figured it out using methods but forgot to note it here, what I wrote did help me though, so I'm leaving it here
+            int colorInterval = 255;
             while (y < endY) {
                 //if the photo's pixel is within the bounds of a bounding box representing the size of the signature
                 if ((x > startX && x < endX) && (y > startY && y < endY)) {
@@ -88,14 +91,20 @@ public class SignatureImagePrep {
                     //Get the color of the temporary signature's pixel at the location on the main photo minus the starting coordinates of the "bounding box"
                     //Then set the respective pixel on the main photo to that color
                     //don't include the whitespace in the signature writing (use the upper leftmost pixel as a reference pixel for the background)
-                    if ((tempSig.getRGB(x - startX, y - startY) == textColor1) || (tempSig.getRGB(x - startX, y - startY) == textColor2) || (tempSig.getRGB(x - startX, y - startY) == textColor3)) // || (tempSig.getRGB(x - startX, y - startY) == textColor4)
-                        imgOut.setRGB(x, y, tempSig.getRGB(x - startX, y - startY));
-                    //do the same thing for the normal signature with the inverted one, but with an offset so that they're both discernible independently and together
-                    if ((invTempSig.getRGB(x - startX, y - startY) == invTextColor1) || (invTempSig.getRGB(x - startX, y - startY) == invTextColor2) || (invTempSig.getRGB(x - startX, y - startY) == invTextColor3)) // || (tempSig.getRGB(x - startX, y - startY) == textColor4)
-                        if (signatureOffset <= padding && signatureOffset >= 1)
-                            imgOut.setRGB(x + signatureOffset, y + signatureOffset, invTempSig.getRGB(x - startX, y - startY));
-                        else
-                            imgOut.setRGB(x + padding, y + padding, invTempSig.getRGB(x - startX, y - startY));
+                    //include all pixels within a certain BW color range
+                    for (int j = 0; j <= colorInterval; j++) {
+                        if (tempSig.getRGB(x - startX, y - startY) == incrementRGB(BLACK, j)) {
+                            imgOut.setRGB(x, y, BLACK); //tempSig.getRGB(x - startX, y - startY)
+                        }
+                        //do the same thing for the normal signature with the inverted one, but with an offset so that they're both discernible independently and together
+                        if (invTempSig.getRGB(x - startX, y - startY) == decrementRGB(WHITE, j)) {
+                            if (signatureOffset <= padding && signatureOffset >= 1) {
+                                imgOut.setRGB(x + signatureOffset, y + signatureOffset, WHITE); //invTempSig.getRGB(x - startX, y - startY)
+                            } else {
+                                imgOut.setRGB(x + padding, y + padding, WHITE); //invTempSig.getRGB(x - startX, y - startY)
+                            }
+                        }
+                    }
                 }
                 
                 //move on to next pixel
@@ -159,4 +168,65 @@ public class SignatureImagePrep {
         }
     }
     
+    public static int incrementRGB (int RGB, int increment) {
+        int [] incrementBinary = incrementBase10ToBinary(increment);
+        int incrementRGB = RGBBinaryToBase10(incrementBinary);
+        int incrementedRGB = RGB + incrementRGB;
+        return incrementedRGB;
+    }
+    
+    public static int decrementRGB (int RGB, int decrement) {
+        int [] decrementBinary = incrementBase10ToBinary(decrement);
+        int decrementRGB = RGBBinaryToBase10(decrementBinary);
+        int decrementedRGB = RGB + decrementRGB;
+        return decrementedRGB;
+    }
+    
+    public static int RGBBinaryToBase10 (int [] base2) {
+        int [] base2Leftover = base2;
+        int base10 = 0;
+        int base2Count = 0;
+        for (int i : base2Leftover)
+            base2Count += i;
+        while (base2Count > 0) {
+            int indexOfFirst1 = 0;
+            for (int j = 0; base2Leftover[j] == 0; j++)
+                indexOfFirst1++;
+            base10 += (int) Math.pow(2, indexOfFirst1);
+            base2Leftover[indexOfFirst1] = 0;
+            base2Count = 0;
+            for (int i : base2Leftover)
+                base2Count += i;
+        }
+        return base10;
+    }
+    
+    public static int [] RGBBase10ToBinary (int base10) {
+        int base10Leftover = Math.abs(base10);
+        int [] base2 = new int [] {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        while (base10Leftover > 0) {
+            int startingSpot = (int)(Math.log(Math.abs(base10))/Math.log(2));
+            base2[startingSpot] = 1;
+            base10Leftover -= (int) Math.pow(2, startingSpot);
+        }
+        return base2;
+    }
+    
+    public static int [] incrementBase10ToBinary (int base10) {
+        int base10Leftover = Math.abs(base10);
+        int [] base2 = new int [] {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        while (base10Leftover > 0) {
+            int startingSpot = (int)(Math.log(Math.abs(base10))/Math.log(2));
+            base2[startingSpot] = 1;
+            base2[startingSpot+8] = 1;
+            base2[startingSpot+16] = 1;
+            base10Leftover -= (int) Math.pow(2, startingSpot);
+        }
+        return base2;
+    }
+    
+    public static int [] addBinaries (int [] a, int [] b) {
+        
+        return a;
+    }
 }
