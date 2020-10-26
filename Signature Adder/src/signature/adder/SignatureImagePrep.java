@@ -172,6 +172,7 @@ public class SignatureImagePrep {
         int [] incrementBinary = incrementBase10ToBinary(increment);
         int incrementRGB = RGBBinaryToBase10(incrementBinary);
         int incrementedRGB = RGB + incrementRGB;
+        System.out.println("There's probably a logical error somewhere in one of the RGB code incrementation methods");
         return incrementedRGB;
     }
     
