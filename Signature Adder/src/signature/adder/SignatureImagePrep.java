@@ -30,6 +30,14 @@ public class SignatureImagePrep {
                         
     public static BufferedImage prepImage (String path) throws IOException {
         try {
+            //NOTE: THE .JPEG ARTIFACTS ARE CAUSED BY A BUFFEREDIMAGE SCALING PROBLEM, SEE: https://stackoverflow.com/questions/7951290/re-sizing-an-image-without-losing-quality
+            /*                          /\
+                                       /  \
+                                        ||
+                                        ||
+                                        ||
+            */
+            
             //set up the images
             BufferedImage imgIn = ImageIO.read(new File(path));
                       
