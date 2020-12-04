@@ -21,7 +21,7 @@ public class SignatureImagePrep {
             //scales signature scaling based on area (for aesthetic reasons), which is why it takes the sqrt of whatever you enter
             public static final double SIGNATURE_SCALE_SCALE = Math.sqrt(0.5);
             //signature's y scale with respect to the main signature scale (not the one above)
-            public static final double SIGNATURE_HEIGHT_SCALE = 64/5;
+            public static final double SIGNATURE_HEIGHT_SCALE = 5/64;
             
             //black RGB code
             public static final int BLACK = -16777216;
@@ -80,7 +80,7 @@ public class SignatureImagePrep {
             int endX = maxX - padding;
             
             //the starting x coordinate of the "bounding box"
-            int startY = maxY - (int)(signatureScale/SIGNATURE_HEIGHT_SCALE) - padding;
+            int startY = maxY - (int)(signatureScale*SIGNATURE_HEIGHT_SCALE) - padding;
             //read signature image's pixels to each photo's respective pixels in the photo's lower right-hand corner            
             int y = startY;
             //the ending y coordinate of the "bounding box"
@@ -154,14 +154,55 @@ public class SignatureImagePrep {
             // reads input image
             File inputFile = new File(inPath);
             BufferedImage inputImage = ImageIO.read(inputFile);
-
-            // creates output image
-            BufferedImage outputImage = new BufferedImage(size,
-                    size/8, inputImage.getType());
-
+            BufferedImage outputImage;
+            
+            //for determining the interpolation hint:
+            //if upscaling (new area > old area)
+            if (size*(size*SIGNATURE_HEIGHT_SCALE) > inputImage.getWidth()*inputImage.getHeight())
+            {
+                //if the downscaling factor (sqrt(old area/new))is more than 2, use the nearest neighbor method
+                if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) > 2) {
+                    // creates output image
+                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE),RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR , true);//new BufferedImage(size, size/8, inputImage.getType());
+                }
+                //if the downscaling factor (sqrt(old area/new))is more than 1.5, use the bilinear method
+                else if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) > 1.5)
+                {
+                    // creates output image
+                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE),RenderingHints.VALUE_INTERPOLATION_BILINEAR , true);//new BufferedImage(size, size/8, inputImage.getType());
+                }
+                //if the downscaling factor (sqrt(old area/new))is more than 1, use the bicubic method
+                else
+                {
+                    // creates output image
+                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE),RenderingHints.VALUE_INTERPOLATION_BICUBIC , true);//new BufferedImage(size, size/8, inputImage.getType());
+                }
+            }
+            //if downscaling
+            else 
+            {
+                //if the downscaling factor (sqrt(old area/new))is less than 2/3, use the bilinear method
+                if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 0.66666)
+                {
+                    // creates output image
+                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE), RenderingHints.VALUE_INTERPOLATION_BILINEAR, false);//new BufferedImage(size, size/8, inputImage.getType());
+                }
+                //if the downscaling factor (sqrt(old area/new))is less than 1/2, use the bilinear method
+                else //(Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) <= 0.5)
+                {
+                    // creates output image
+                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE), RenderingHints.VALUE_INTERPOLATION_BICUBIC, false);//new BufferedImage(size, size/8, inputImage.getType());
+                }
+//                //if downscaling past 0.5 original size use the older technique for smoother downscaling 
+//                else {
+//                    // creates output image
+//                    outputImage = ;
+//                }
+            }
+            
             // scales the input image to the output image
             Graphics2D g2d = outputImage.createGraphics();
-            g2d.drawImage(inputImage, 0, 0, size, (int)(size/SIGNATURE_HEIGHT_SCALE), null);
+            g2d.drawImage(inputImage, 0, 0, size, (int)(size*SIGNATURE_HEIGHT_SCALE), null);
             g2d.dispose();
 
             // extracts extension of output file
@@ -174,6 +215,74 @@ public class SignatureImagePrep {
             System.out.println("Error resizing the image.");
             ex.printStackTrace();
         }
+    }
+    
+    //see https://web.archive.org/web/20080516181120/http://today.java.net/pub/a/today/2007/04/03/perils-of-image-getscaledinstance.html
+    /**
+    * Convenience method that returns a scaled instance of the
+    * provided {@code BufferedImage}.
+    *
+    * @param img the original image to be scaled
+    * @param targetWidth the desired width of the scaled instance,
+    *    in pixels
+    * @param targetHeight the desired height of the scaled instance,
+    *    in pixels
+    * @param hint one of the rendering hints that corresponds to
+    *    {@code RenderingHints.KEY_INTERPOLATION} (e.g.
+    *    {@code RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR},
+    *    {@code RenderingHints.VALUE_INTERPOLATION_BILINEAR},
+    *    {@code RenderingHints.VALUE_INTERPOLATION_BICUBIC})
+    * @param higherQuality if true, this method will use a multi-step
+    *    scaling technique that provides higher quality than the usual
+    *    one-step technique (only useful in down scaling cases, where
+    *    {@code targetWidth} or {@code targetHeight} is
+    *    smaller than the original dimensions, and generally only when
+    *    the {@code BILINEAR} hint is specified)
+    * @return a scaled version of the original {@code BufferedImage}
+    */
+    public static BufferedImage getScaledInstance(BufferedImage img, int targetWidth, int targetHeight, Object hint, boolean higherQuality) {
+        int type = (img.getTransparency() == Transparency.OPAQUE) ?
+            BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
+        BufferedImage ret = (BufferedImage)img;
+        int w, h;
+        if (higherQuality) {
+            // Use multi-step technique: start with original size, then
+            // scale down in multiple passes with drawImage()
+            // until the target size is reached
+            w = img.getWidth();
+            h = img.getHeight();
+        } else {
+            // Use one-step technique: scale directly from original
+            // size to target size with a single drawImage() call
+            w = targetWidth;
+            h = targetHeight;
+        }
+
+        do {
+            if (higherQuality && w > targetWidth) {
+                w /= 2;
+                if (w < targetWidth) {
+                    w = targetWidth;
+                }
+            }
+
+            if (higherQuality && h > targetHeight) {
+                h /= 2;
+                if (h < targetHeight) {
+                    h = targetHeight;
+                }
+            }
+
+            BufferedImage tmp = new BufferedImage(w, h, type);
+            Graphics2D g2 = tmp.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
+            g2.drawImage(ret, 0, 0, w, h, null);
+            g2.dispose();
+
+            ret = tmp;
+        } while (w != targetWidth || h != targetHeight);
+
+        return ret;
     }
     
     public static int incrementRGB (int RGB, int increment) {

@@ -106,5 +106,10 @@ public class SignatureAdder{
     
    
 }
+/*
+Sources:
+    Debugging                               Mr. Crow my Cybersecurity teacher
+    Signature free from .jpeg artifacts:    https://web.archive.org/web/20080516181120/http://today.java.net/pub/a/today/2007/04/03/perils-of-image-getscaledinstance.html
+*/
 
-//Special thanks to Mr. Crow, my Cybersecurity teacher, for helping me debug this, I never would've finished it without his help
+//Extra thanks to Mr. Crow, my Cybersecurity teacher, for helping me debug this, I never would've finished it without his help
