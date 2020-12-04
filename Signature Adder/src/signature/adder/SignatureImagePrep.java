@@ -21,7 +21,7 @@ public class SignatureImagePrep {
             //scales signature scaling based on area (for aesthetic reasons), which is why it takes the sqrt of whatever you enter
             public static final double SIGNATURE_SCALE_SCALE = Math.sqrt(0.5);
             //signature's y scale with respect to the main signature scale (not the one above)
-            public static final double SIGNATURE_HEIGHT_SCALE = 5/64;
+            public static final double SIGNATURE_HEIGHT_SCALE = 7/64.0;
             
             //black RGB code
             public static final int BLACK = -16777216;
@@ -30,13 +30,7 @@ public class SignatureImagePrep {
                         
     public static BufferedImage prepImage (String path) throws IOException {
         try {
-            //NOTE: THE .JPEG ARTIFACTS ARE CAUSED BY A BUFFEREDIMAGE SCALING PROBLEM, SEE: https://stackoverflow.com/questions/7951290/re-sizing-an-image-without-losing-quality
-            /*                          /\
-                                       /  \
-                                        ||
-                                        ||
-                                        ||
-            */
+            //NOTE: THE .JPEG ARTIFACTS ARE CAUSED BY A BUFFEREDIMAGE PROBLEM
             
             //set up the images
             BufferedImage imgIn = ImageIO.read(new File(path));
@@ -161,43 +155,60 @@ public class SignatureImagePrep {
             if (size*(size*SIGNATURE_HEIGHT_SCALE) > inputImage.getWidth()*inputImage.getHeight())
             {
                 //if the downscaling factor (sqrt(old area/new))is more than 2, use the nearest neighbor method
+                //higher performance, but lower-quality, "blocky" results
                 if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) > 2) {
                     // creates output image
+                    //debugging
+                    System.out.println("Upscaling signature with VALUE_INTERPOLATION_NEAREST_NEIGHBOR method");
                     outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE),RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR , true);//new BufferedImage(size, size/8, inputImage.getType());
                 }
                 //if the downscaling factor (sqrt(old area/new))is more than 1.5, use the bilinear method
+                //a bit slower, but provides higher-quality, "filtered" results.
                 else if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) > 1.5)
                 {
                     // creates output image
+                    //debugging
+                    System.out.println("Upscaling signature with VALUE_INTERPOLATION_BILINEAR method");
                     outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE),RenderingHints.VALUE_INTERPOLATION_BILINEAR , true);//new BufferedImage(size, size/8, inputImage.getType());
                 }
                 //if the downscaling factor (sqrt(old area/new))is more than 1, use the bicubic method
+                //similar to BILINEAR except that it uses more samples when filtering
                 else
                 {
                     // creates output image
+                    //debugging
+                    System.out.println("Upscaling signature with VALUE_INTERPOLATION_BICUBIC method");
                     outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE),RenderingHints.VALUE_INTERPOLATION_BICUBIC , true);//new BufferedImage(size, size/8, inputImage.getType());
                 }
             }
             //if downscaling
             else 
             {
-                //if the downscaling factor (sqrt(old area/new))is less than 2/3, use the bilinear method
-                if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 0.66666)
-                {
-                    // creates output image
-                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE), RenderingHints.VALUE_INTERPOLATION_BILINEAR, false);//new BufferedImage(size, size/8, inputImage.getType());
-                }
-                //if the downscaling factor (sqrt(old area/new))is less than 1/2, use the bilinear method
-                else //(Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) <= 0.5)
-                {
-                    // creates output image
-                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE), RenderingHints.VALUE_INTERPOLATION_BICUBIC, false);//new BufferedImage(size, size/8, inputImage.getType());
-                }
-//                //if downscaling past 0.5 original size use the older technique for smoother downscaling 
-//                else {
+                //if downscaling past 0.8 original size use the older technique for smoother downscaling 
+//                if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 0.8) {
 //                    // creates output image
 //                    outputImage = ;
 //                }
+                //if the downscaling factor (sqrt(old area/new))is less than 0.9, use the bilinear method
+                //similar to BILINEAR except that it uses more samples when filtering
+                if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 0.9)
+                {
+                    // creates output image
+                    //debugging
+                    System.out.println(Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())));
+                    System.out.println("Downscaling signature with VALUE_INTERPOLATION_BICUBIC method");
+                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE), RenderingHints.VALUE_INTERPOLATION_BICUBIC, false);//new BufferedImage(size, size/8, inputImage.getType());
+                }
+                //if the downscaling factor (sqrt(old area/new))is less than 1, use the bilinear method
+                //a bit slower, but provides higher-quality, "filtered" results.
+                else //(Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 1)
+                {
+                    // creates output image
+                    //debugging
+                    System.out.println("Downscaling signature with VALUE_INTERPOLATION_BILINEAR method");
+                    outputImage = getScaledInstance(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE), RenderingHints.VALUE_INTERPOLATION_BILINEAR, false);//new BufferedImage(size, size/8, inputImage.getType());
+                }
+//                
             }
             
             // scales the input image to the output image
@@ -289,7 +300,7 @@ public class SignatureImagePrep {
         int [] incrementBinary = incrementBase10ToBinary(increment);
         int incrementRGB = RGBBinaryToBase10(incrementBinary);
         int incrementedRGB = RGB + incrementRGB;
-        System.out.println("There's probably a logical error somewhere in one of the RGB code incrementation methods");
+//        System.out.println("There's probably a logical error somewhere in one of the RGB code incrementation methods");
         return incrementedRGB;
     }
     
