@@ -30,8 +30,6 @@ public class SignatureImagePrep {
                         
     public static BufferedImage prepImage (String path) throws IOException {
         try {
-            //NOTE: THE .JPEG ARTIFACTS ARE CAUSED BY A BUFFEREDIMAGE PROBLEM
-            
             //set up the images
             BufferedImage imgIn = ImageIO.read(new File(path));
                       
@@ -185,13 +183,13 @@ public class SignatureImagePrep {
             else 
             {
                 //if downscaling past 0.8 original size use the older technique for smoother downscaling 
-//                if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 0.8) {
-//                    // creates output image
-//                    outputImage = ;
-//                }
+                if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 0.8) {
+                    // creates output image
+                    outputImage = olderMethod(inputImage, size, (int) (size*SIGNATURE_HEIGHT_SCALE), Image.SCALE_AREA_AVERAGING);
+                }
                 //if the downscaling factor (sqrt(old area/new))is less than 0.9, use the bilinear method
                 //similar to BILINEAR except that it uses more samples when filtering
-                if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 0.9)
+                else if (Math.sqrt((size*(size*SIGNATURE_HEIGHT_SCALE))/(inputImage.getWidth()*inputImage.getHeight())) < 0.9)
                 {
                     // creates output image
                     //debugging
@@ -296,6 +294,29 @@ public class SignatureImagePrep {
         return ret;
     }
     
+    public static BufferedImage olderMethod (BufferedImage inputImage, int newWidth, int newHeight, int hint) {
+        return toBufferedImage(inputImage.getScaledInstance(newWidth, newHeight, hint));
+    }
+    
+    public static BufferedImage toBufferedImage(Image img)
+    {
+        if (img instanceof BufferedImage)
+        {
+            return (BufferedImage) img;
+        }
+
+        // Create a buffered image with transparency
+        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+        // Draw the image on to the buffered image
+        Graphics2D bGr = bimage.createGraphics();
+        bGr.drawImage(img, 0, 0, null);
+        bGr.dispose();
+
+        // Return the buffered image
+        return bimage;
+    }
+    
     public static int incrementRGB (int RGB, int increment) {
         int [] incrementBinary = incrementBase10ToBinary(increment);
         int incrementRGB = RGBBinaryToBase10(incrementBinary);
@@ -355,7 +376,23 @@ public class SignatureImagePrep {
     }
     
     public static int [] addBinaries (int [] a, int [] b) {
+        //initializing the returned array
+        int [] aPLUSb;
+        //if a is the longer binary value
+        if (a.length >= b.length)
+            aPLUSb = new int [a.length];
+        //else if b is longer
+        else
+            aPLUSb = new int [b.length];
         
-        return a;
+        boolean carryTheOne = false;
+
+        for (int i = 0; i < aPLUSb.length; i++) {
+            if (carryTheOne) {
+
+            }
+        }
+
+        return aPLUSb; 
     }
 }

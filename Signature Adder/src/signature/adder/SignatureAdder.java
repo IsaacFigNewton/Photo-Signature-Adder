@@ -108,8 +108,11 @@ public class SignatureAdder{
 }
 /*
 Sources:
-    Debugging                               Mr. Crow my Cybersecurity teacher
-    Signature free from .jpeg artifacts:    https://web.archive.org/web/20080516181120/http://today.java.net/pub/a/today/2007/04/03/perils-of-image-getscaledinstance.html
+    Debugging                                       Mr. Crow my Cybersecurity teacher
+    Signature free from .jpeg artifacts:            https://web.archive.org/web/20080516181120/http://today.java.net/pub/a/today/2007/04/03/perils-of-image-getscaledinstance.html
+                                                    https://docs.oracle.com/javase/7/docs/api/java/awt/Image.html
+    Converting Image objects to BufferedImage ones: https://stackoverflow.com/questions/13605248/java-converting-image-to-bufferedimage
+    
 */
 
 //Extra thanks to Mr. Crow, my Cybersecurity teacher, for helping me debug this, I never would've finished it without his help
